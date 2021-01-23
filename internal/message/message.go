@@ -53,11 +53,11 @@ func NewReader(reader io.Reader) *Reader {
 func (w *Writer) Write(message interface{}) error {
 	switch m := message.(type) {
 	case ClientMessage:
-		return w.writeMessage(fmt.Sprintf("%s %s\n", SENT, m.Message))
+		return w.writeMessage(fmt.Sprintf("%s%s\n", SENT, m.Message))
 	case NameMessage:
-		return w.writeMessage(fmt.Sprintf("%s %s\n", NAME, m.Name))
+		return w.writeMessage(fmt.Sprintf("%s%s\n", NAME, m.Name))
 	case ServerMessage:
-		return w.writeMessage(fmt.Sprintf("%s %s: %s\n", RECEIVED, m.ClientName, m.Message))
+		return w.writeMessage(fmt.Sprintf("%s%s:%s\n", RECEIVED, m.ClientName, m.Message))
 	}
 	return nil
 }
@@ -112,7 +112,7 @@ func (r *Reader) Read() (interface{}, error) {
 		}
 
 		return ServerMessage{
-			ClientName: trimSuffix(clientName, " "),
+			ClientName: trimSuffix(clientName, ":"),
 			Message:    trimSuffix(message, "\n"),
 		}, nil
 
