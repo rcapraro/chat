@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"github.com/rcapraro/chat/client"
 	"github.com/rcapraro/chat/internal/message"
 	"log"
@@ -10,10 +11,10 @@ import (
 
 func main() {
 	c := client.NewClient()
-	defer c.Close() //TODO remove client from server...or there will be broadcast errors
+	defer c.Close()
 	err := c.Connect()
 	if err != nil {
-		log.Fatalf("Impossible to Connect to the server...exiting") //TODO retry
+		log.Fatalf("Impossible to Connect to the server...exiting")
 	}
 	go c.StartListening()
 	err = c.SendMessage(message.NameMessage{
@@ -23,24 +24,27 @@ func main() {
 		log.Fatalf("Impossible to Send message to the server...exiting")
 	}
 
+	fmt.Printf("Connected as %s\n", c.Name)
+
 	go func() {
 		for msg := range c.MessagesChan {
 			//Only display messages from other clients to Stdout
 			if msg.ClientName != c.Name {
-				log.Printf("%v says: %v", msg.ClientName, msg.Message)
+				fmt.Printf("%v says: %v\n", msg.ClientName, msg.Message)
 			}
 		}
 	}()
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
-		// Scans a line from Stdin(Console)
+		//Scans a line from Stdin(Console)
 		scanner.Scan()
 		msg := scanner.Text()
 		if len(msg) != 0 {
 			_ = c.SendMessage(message.ClientMessage{Message: msg})
 		} else {
-			break
+			//empty string
+			continue
 		}
 	}
 }

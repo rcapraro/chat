@@ -18,7 +18,7 @@ type Client struct {
 
 func NewClient() *Client {
 	return &Client{
-		Name: randomdata.FullName(randomdata.RandomGender),
+		Name:         randomdata.FullName(randomdata.RandomGender),
 		MessagesChan: make(chan message.ServerMessage),
 	}
 }
@@ -66,5 +66,3 @@ func (c *Client) SendMessage(message interface{}) error {
 func (c *Client) Close() {
 	c.conn.Close()
 }
-
-

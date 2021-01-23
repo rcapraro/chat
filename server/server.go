@@ -11,12 +11,12 @@ import (
 type Server struct {
 	listener net.Listener       //Server is listening to TCP sockets
 	clients  []*connectedClient //Slice of connected clients
-	mutex *sync.Mutex           //Synchronization primitive to update the list of connected clients in a goroutine context
+	mutex    *sync.Mutex        //Synchronization primitive to update the list of connected clients in a goroutine context
 }
 
 type connectedClient struct {
 	name   string
-	conn   net.Conn //Client TCP socket connection
+	conn   net.Conn        //Client TCP socket connection
 	writer *message.Writer //Writer to write messages on the conn
 }
 
@@ -42,7 +42,7 @@ func (s *Server) StartListening() {
 		if err != nil {
 			log.Print(err)
 		} else {
-			client:=s.acceptClientConnection(conn)
+			client := s.acceptClientConnection(conn)
 			go s.serveClient(client)
 		}
 	}
@@ -53,7 +53,7 @@ func (s *Server) acceptClientConnection(conn net.Conn) *connectedClient {
 	defer s.mutex.Unlock()
 
 	client := &connectedClient{
-		conn: conn,
+		conn:   conn,
 		writer: message.NewWriter(conn),
 	}
 
@@ -71,7 +71,7 @@ func (s *Server) serveClient(client *connectedClient) {
 	for {
 		msg, err := messageReader.Read()
 
-		if err != nil && err != io.EOF{
+		if err != nil && err != io.EOF {
 			log.Printf("Error while reading message: %v", err)
 		}
 
@@ -90,7 +90,7 @@ func (s *Server) serveClient(client *connectedClient) {
 	}
 }
 
-func (s * Server) disconnectClient(client *connectedClient) {
+func (s *Server) disconnectClient(client *connectedClient) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -102,8 +102,8 @@ func (s * Server) disconnectClient(client *connectedClient) {
 		}
 	}()
 
-	for i, c :=range s.clients {
-		if c==client {
+	for i, c := range s.clients {
+		if c == client {
 			s.clients = removeClient(s.clients, i)
 		}
 	}
@@ -120,9 +120,9 @@ func (s *Server) broadcastMessage(message interface{}) {
 	}
 }
 
-func removeClient(clients[]*connectedClient, i int) []*connectedClient {
+func removeClient(clients []*connectedClient, i int) []*connectedClient {
 	clients[i] = clients[len(clients)-1] //swap client to delete with last client
-	return clients[:len(clients)-1] //remove the last client
+	return clients[:len(clients)-1]      //remove the last client
 }
 
 func (s *Server) Close() {
@@ -131,6 +131,3 @@ func (s *Server) Close() {
 		log.Fatal("Error while closing the server...exiting")
 	}
 }
-
-
-
