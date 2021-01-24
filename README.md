@@ -28,7 +28,7 @@ If the command is successful, you should be able to see the following output in 
 go run main.go
 ```
 
-Each new client will have a username automatically generated, so if the command is successful, you will see this output in your console:
+Each new client will have a username automatically generated, so if the command is successful, you will see this kind of output in your console:
 ```
 021/01/24 16:01:45 Client connected to server / port 6697
 Connected as Elizabeth Thomas
@@ -36,6 +36,3 @@ Connected as Elizabeth Thomas
 ```
 
 Then you can enter the text you want after the prompt (>) and see how the Server and the other Clients react.
-
-
-
