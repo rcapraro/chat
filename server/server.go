@@ -59,7 +59,7 @@ func (s *Server) acceptClientConnection(conn net.Conn) *connectedClient {
 
 	s.clients = append(s.clients, client)
 
-	log.Printf("Server acccepting new connection from client %s", conn.RemoteAddr().String())
+	log.Printf("Server acccepting new connection from client %v", conn.RemoteAddr())
 
 	return client
 }
@@ -71,8 +71,12 @@ func (s *Server) serveClient(client *connectedClient) {
 	for {
 		msg, err := messageReader.Read()
 
-		if err != nil && err != io.EOF {
-			log.Printf("Error while reading message: %v", err)
+		if err != nil {
+			if err == io.EOF {
+				break //will trigger disconnectClient
+			} else {
+				log.Printf("Error while reading message: %v", err)
+			}
 		}
 
 		if msg != nil {
@@ -80,7 +84,7 @@ func (s *Server) serveClient(client *connectedClient) {
 			case message.NameMessage:
 				client.name = msgType.Name
 			case message.ClientMessage:
-				log.Printf("Receiving message from client %s, broadcasting...", client.name)
+				log.Printf("Receiving message from client %v (%s), broadcasting...", client.conn.RemoteAddr(), client.name)
 				go s.broadcastMessage(message.ServerMessage{
 					ClientName: client.name,
 					Message:    msgType.Message,
@@ -94,11 +98,11 @@ func (s *Server) disconnectClient(client *connectedClient) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	clientAddr := client.conn.RemoteAddr().String()
+	clientAddr := client.conn.RemoteAddr()
 	defer func() {
 		err := client.conn.Close()
 		if err != nil {
-			log.Printf("Error while trying to disconnect client %s", clientAddr)
+			log.Printf("Error while trying to disconnect client %v (%s)", clientAddr, client.name)
 		}
 	}()
 
@@ -108,14 +112,14 @@ func (s *Server) disconnectClient(client *connectedClient) {
 		}
 	}
 
-	log.Printf("Server disconnecting client %s", clientAddr)
+	log.Printf("Server disconnecting client %v (%s)", clientAddr, client.name)
 }
 
 func (s *Server) broadcastMessage(message interface{}) {
-	for _, client := range s.clients {
-		err := client.writer.Write(message)
+	for _, c := range s.clients {
+		err := c.writer.Write(message)
 		if err != nil {
-			log.Printf("Error while broadcasting message to client %v", client.conn.RemoteAddr().String())
+			log.Printf("Error while broadcasting message to client %v (%s)", c.conn.RemoteAddr(), c.name)
 		}
 	}
 }

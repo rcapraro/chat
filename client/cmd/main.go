@@ -24,19 +24,20 @@ func main() {
 		log.Fatalf("Impossible to Send message to the server...exiting")
 	}
 
-	fmt.Printf("Connected as %s\n", c.Name)
+	fmt.Printf("Connected as \033[36m%s\033[0m\n", c.Name)
 
 	go func() {
 		for msg := range c.MessagesChan {
 			//Only display messages from other clients to Stdout
 			if msg.ClientName != c.Name {
-				fmt.Printf("%v says: %v\n", msg.ClientName, msg.Message)
+				fmt.Printf("\n\033[35m# %v says: %v\n\033[32m>\033[0m ", msg.ClientName, msg.Message)
 			}
 		}
 	}()
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
+		fmt.Print("\033[32m>\033[0m ")
 		//Scans a line from Stdin(Console)
 		scanner.Scan()
 		msg := scanner.Text()
