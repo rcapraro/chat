@@ -23,7 +23,7 @@ func NewClient() *Client {
 	//Use the Seed function to initialize the default Source for Int in a non deterministic sequence of values.
 	rand.Seed(time.Now().UnixNano())
 	return &Client{
-		Name:         fmt.Sprintf("%s %d", randomdata.FullName(randomdata.RandomGender), rand.Intn(99)),
+		Name:         randomdata.FullName(randomdata.RandomGender),
 		MessagesChan: make(chan message.ServerMessage),
 	}
 }
@@ -63,7 +63,7 @@ func (c *Client) StartListening() {
 		}
 
 		if ne, ok := err.(net.Error); ok && ne.Timeout() && ne.Temporary() || err == io.EOF {
-			log.Printf("Network error: %v...trying to reconnect", err)
+			log.Printf("Network error: %v...trying to reconnect in 3s", err)
 			time.Sleep(3 * time.Second)
 			_ = c.Connect(c.Name)
 			continue

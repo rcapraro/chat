@@ -36,3 +36,4 @@ Connected as Elizabeth Thomas
 ```
 
 Then you can enter the text you want after the prompt (>) and see how the Server and the other Clients react.
+You can even kill (CTRL+C) the Server or one of the Client and see what happens!
