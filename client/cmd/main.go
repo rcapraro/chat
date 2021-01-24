@@ -12,7 +12,7 @@ import (
 func main() {
 	c := client.NewClient()
 	defer c.Close()
-	err := c.Connect()
+	err := c.Connect("")
 	if err != nil {
 		log.Fatalf("Impossible to Connect to the server...exiting")
 	}

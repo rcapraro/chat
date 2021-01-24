@@ -1,11 +1,14 @@
 package client
 
 import (
+	"fmt"
 	"github.com/Pallinder/go-randomdata"
 	"github.com/rcapraro/chat/internal/message"
 	"io"
 	"log"
+	"math/rand"
 	"net"
+	"time"
 )
 
 type Client struct {
@@ -17,13 +20,15 @@ type Client struct {
 }
 
 func NewClient() *Client {
+	//Use the Seed function to initialize the default Source for Int in a non deterministic sequence of values.
+	rand.Seed(time.Now().UnixNano())
 	return &Client{
-		Name:         randomdata.FullName(randomdata.RandomGender),
+		Name:         fmt.Sprintf("%s %d", randomdata.FullName(randomdata.RandomGender), rand.Intn(99)),
 		MessagesChan: make(chan message.ServerMessage),
 	}
 }
 
-func (c *Client) Connect() error {
+func (c *Client) Connect(name string) error {
 	conn, err := net.Dial("tcp", "127.0.0.1:6697") //because it reminds me of IRC
 
 	if err != nil {
@@ -35,6 +40,17 @@ func (c *Client) Connect() error {
 	c.messageWriter = message.NewWriter(conn)
 	c.messageReader = message.NewReader(conn)
 
+	// Handle reconnection
+	if name != "" {
+		fmt.Print("\u001B[32m>\u001B[0m ")
+		err = c.SendMessage(message.NameMessage{
+			Name: c.Name,
+		})
+		if err != nil {
+			log.Fatalf("Impossible to Send message to the server...exiting")
+		}
+	}
+
 	return nil
 }
 
@@ -42,10 +58,17 @@ func (c *Client) StartListening() {
 	for {
 		msg, err := c.messageReader.Read()
 
-		if err == io.EOF {
-			break
-		} else if err != nil {
+		if err != nil {
 			log.Printf("Error while reading message: %v", err)
+		}
+
+		if ne, ok := err.(net.Error); ok && ne.Timeout() && ne.Temporary() || err == io.EOF {
+			log.Printf("Network error: %v...trying to reconnect", err)
+			time.Sleep(3 * time.Second)
+			_ = c.Connect(c.Name)
+			continue
+		} else if err != nil {
+			log.Fatalf("Unrecoverable error: %v...exiting", err)
 		}
 
 		if msg != nil {
