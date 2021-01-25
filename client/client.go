@@ -58,10 +58,6 @@ func (c *Client) StartListening() {
 	for {
 		msg, err := c.messageReader.Read()
 
-		if err != nil {
-			log.Printf("Error while reading message: %v", err)
-		}
-
 		if ne, ok := err.(net.Error); ok && ne.Timeout() && ne.Temporary() || err == io.EOF {
 			log.Printf("Network error: %v...trying to reconnect in 3s", err)
 			time.Sleep(3 * time.Second)
