@@ -1,13 +1,13 @@
-# Coding challenge
+# Golang Chat
 
 ## Goal
 
-The goal of this exercise is to create a dead simple "chat" system. This system must be built in two parts:
+This is a dead simple "chat" system. This system is built in two parts:
 
 * `Server` Receiving messages from a network interface (any kind) and forwarding them to all the connected clients
 * `Client` A process reading a string on `STDIN` and forwarding it to the server, and also receiving messages from the same server and writing them to `STDOUT`.
 
-## How to run this exercise
+## How to run this code
 
 The code is written in `Golang`, and uses modules.
 
