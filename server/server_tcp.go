@@ -43,7 +43,7 @@ func (s *TcpServer) Listen() {
 			log.Print(err)
 		} else {
 			client := s.accept(conn)
-			go s.server(client)
+			go s.serve(client)
 		}
 	}
 }
@@ -64,7 +64,7 @@ func (s *TcpServer) accept(conn net.Conn) *connectedClient {
 	return client
 }
 
-func (s *TcpServer) server(client *connectedClient) {
+func (s *TcpServer) serve(client *connectedClient) {
 	messageReader := message.NewReader(client.conn)
 	defer s.disconnect(client)
 

@@ -7,7 +7,7 @@ type Server interface {
 	Listen()
 	Close()
 	accept(conn net.Conn) *connectedClient
-	server(client *connectedClient)
+	serve(client *connectedClient)
 	disconnect(client *connectedClient)
 	broadcast(message interface{})
 }
