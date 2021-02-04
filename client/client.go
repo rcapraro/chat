@@ -2,7 +2,7 @@ package client
 
 type Client interface {
 	Connect(name string) error
-	StartListening()
-	SendMessage(message interface{}) error
+	Start()
+	Send(message interface{}) error
 	Close()
 }

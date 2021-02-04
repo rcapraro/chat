@@ -43,7 +43,7 @@ func (c *TcpClient) Connect(name string) error {
 	// Handle reconnection
 	if name != "" {
 		fmt.Print("\u001B[32m>\u001B[0m ")
-		err = c.SendMessage(message.NameMessage{
+		err = c.Send(message.NameMessage{
 			Name: c.Name,
 		})
 		if err != nil {
@@ -54,7 +54,7 @@ func (c *TcpClient) Connect(name string) error {
 	return nil
 }
 
-func (c *TcpClient) StartListening() {
+func (c *TcpClient) Start() {
 	for {
 		msg, err := c.messageReader.Read()
 
@@ -78,7 +78,7 @@ func (c *TcpClient) StartListening() {
 	}
 }
 
-func (c *TcpClient) SendMessage(message interface{}) error {
+func (c *TcpClient) Send(message interface{}) error {
 	return c.messageWriter.Write(message)
 }
 

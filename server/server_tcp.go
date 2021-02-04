@@ -24,7 +24,7 @@ func NewServer() *TcpServer {
 	return &TcpServer{mutex: &sync.Mutex{}}
 }
 
-func (s *TcpServer) Connect() error {
+func (s *TcpServer) Start() error {
 	l, err := net.Listen("tcp", ":6697") //because it reminds me of IRC
 	if err != nil {
 		return err
@@ -36,19 +36,19 @@ func (s *TcpServer) Connect() error {
 	return err
 }
 
-func (s *TcpServer) StartListening() {
+func (s *TcpServer) Listen() {
 	for {
 		conn, err := s.listener.Accept()
 		if err != nil {
 			log.Print(err)
 		} else {
-			client := s.acceptClientConnection(conn)
-			go s.serveClient(client)
+			client := s.accept(conn)
+			go s.server(client)
 		}
 	}
 }
 
-func (s *TcpServer) acceptClientConnection(conn net.Conn) *connectedClient {
+func (s *TcpServer) accept(conn net.Conn) *connectedClient {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -64,16 +64,16 @@ func (s *TcpServer) acceptClientConnection(conn net.Conn) *connectedClient {
 	return client
 }
 
-func (s *TcpServer) serveClient(client *connectedClient) {
+func (s *TcpServer) server(client *connectedClient) {
 	messageReader := message.NewReader(client.conn)
-	defer s.disconnectClient(client)
+	defer s.disconnect(client)
 
 	for {
 		msg, err := messageReader.Read()
 
 		if err != nil {
 			if err == io.EOF {
-				break //will trigger disconnectClient
+				break //will trigger disconnect
 			} else {
 				log.Printf("Error while reading message: %v", err)
 			}
@@ -85,7 +85,7 @@ func (s *TcpServer) serveClient(client *connectedClient) {
 				client.name = msgType.Name
 			case message.ClientMessage:
 				log.Printf("Receiving message from client %v (%s), broadcasting...", client.conn.RemoteAddr(), client.name)
-				go s.broadcastMessage(message.ServerMessage{
+				go s.broadcast(message.ServerMessage{
 					ClientName: client.name,
 					Message:    msgType.Message,
 				})
@@ -94,7 +94,7 @@ func (s *TcpServer) serveClient(client *connectedClient) {
 	}
 }
 
-func (s *TcpServer) disconnectClient(client *connectedClient) {
+func (s *TcpServer) disconnect(client *connectedClient) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -115,7 +115,7 @@ func (s *TcpServer) disconnectClient(client *connectedClient) {
 	log.Printf("Server disconnecting client %v (%s)", clientAddr, client.name)
 }
 
-func (s *TcpServer) broadcastMessage(message interface{}) {
+func (s *TcpServer) broadcast(message interface{}) {
 	for _, c := range s.clients {
 		err := c.writer.Write(message)
 		if err != nil {

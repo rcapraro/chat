@@ -16,8 +16,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Impossible to Connect to the server...exiting")
 	}
-	go c.StartListening()
-	err = c.SendMessage(message.NameMessage{
+	go c.Start()
+	err = c.Send(message.NameMessage{
 		Name: c.Name,
 	})
 	if err != nil {
@@ -42,7 +42,7 @@ func main() {
 		scanner.Scan()
 		msg := scanner.Text()
 		if len(msg) != 0 {
-			_ = c.SendMessage(message.ClientMessage{Message: msg})
+			_ = c.Send(message.ClientMessage{Message: msg})
 		} else {
 			//empty string
 			continue

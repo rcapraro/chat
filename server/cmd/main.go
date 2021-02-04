@@ -8,9 +8,9 @@ import (
 func main() {
 	s := server.NewServer()
 	defer s.Close()
-	err := s.Connect()
+	err := s.Start()
 	if err != nil {
 		log.Fatalf("Impossible to Start the server...exiting")
 	}
-	s.StartListening()
+	s.Listen()
 }

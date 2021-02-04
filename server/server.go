@@ -3,8 +3,11 @@ package server
 import "net"
 
 type Server interface {
-	Connect() error
-	StartListening()
-	acceptClientConnection(conn net.Conn) *connectedClient
-	serveClient(client *connectedClient)
+	Start() error
+	Listen()
+	Close()
+	accept(conn net.Conn) *connectedClient
+	server(client *connectedClient)
+	disconnect(client *connectedClient)
+	broadcast(message interface{})
 }
